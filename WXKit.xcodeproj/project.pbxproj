@@ -119,6 +119,7 @@
 		A1C5ADCB1FBD61F400D55238 /* WXKit */ = {
 			isa = PBXGroup;
 			children = (
+				A1C5ADDE1FBD61F400D55238 /* WXQRCode */,
 				A1C5ADCC1FBD61F400D55238 /* NSObject+WXAuthorization.h */,
 				A1C5ADCD1FBD61F400D55238 /* NSObject+WXAuthorization.m */,
 				A1C5ADCE1FBD61F400D55238 /* NSObject+WXRuntime.h */,
@@ -137,7 +138,6 @@
 				A1C5ADDB1FBD61F400D55238 /* UIViewController+WXController.m */,
 				A1C5ADDC1FBD61F400D55238 /* WXKit.h */,
 				A1C5ADDD1FBD61F400D55238 /* WXMacro.h */,
-				A1C5ADDE1FBD61F400D55238 /* WXQRCode */,
 			);
 			path = WXKit;
 			sourceTree = "<group>";
