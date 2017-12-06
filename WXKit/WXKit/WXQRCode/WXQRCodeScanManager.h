@@ -15,12 +15,16 @@
 @required
 /** 二维码扫描获取数据的回调方法 (metadataObjects: 扫描二维码数据信息) */
 - (void)wx_QRCodeScanManager:(WXQRCodeScanManager *)scanManager
- didOutputMetadataObjects:(NSArray *)metadataObjects;
+    didOutputMetadataObjects:(NSArray *)metadataObjects;
 
 @optional
 /** 根据光线强弱值打开手电筒的方法 (brightnessValue: 光线强弱值) */
 - (void)wx_QRCodeScanManager:(WXQRCodeScanManager *)scanManager
-          brightnessValue:(CGFloat)brightnessValue;
+             brightnessValue:(CGFloat)brightnessValue;
+
+/** 从相册中读取二维码结果回调 */
+- (void)wx_QRCodeScanManager:(WXQRCodeScanManager *)scanManager
+didOutputFromAlbumMessageString:(NSString *)messageString;
 
 @end
 
@@ -31,6 +35,8 @@
 
 /** 扫描有效区域 **/
 @property (nonatomic) CGRect effectiveRect;
+
+@property (nonatomic) CGRect previewLayerRect;
 
 /** 快速创建单利方法 **/
 + (instancetype)sharedManager;
@@ -45,6 +51,9 @@
 - (void)wx_setupSessionPreset:(NSString *)sessionPreset
        metadataObjectTypes:(NSArray *)metadataObjectTypes
          currentController:(UIViewController *)currentController;
+
+/** 从相册中读取二维码*/
+- (void)wx_readTheQRCodeFromTheAlbumWithOpenAlbumSuccess:(void(^)(UIImagePickerController *pickerVC))success  error:(void(^)(NSString *errorStr))error;
 
 /** 开启会话对象扫描 */
 - (void)wx_startRunning;

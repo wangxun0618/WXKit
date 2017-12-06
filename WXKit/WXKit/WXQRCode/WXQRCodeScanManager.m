@@ -8,7 +8,7 @@
 
 #import "WXQRCodeScanManager.h"
 
-@interface WXQRCodeScanManager () <AVCaptureMetadataOutputObjectsDelegate, AVCaptureVideoDataOutputSampleBufferDelegate>
+@interface WXQRCodeScanManager () <AVCaptureMetadataOutputObjectsDelegate, AVCaptureVideoDataOutputSampleBufferDelegate,UIImagePickerControllerDelegate,UINavigationControllerDelegate>
 
 @property (nonatomic, strong) AVCaptureSession *session;
 @property (nonatomic, strong) AVCaptureVideoDataOutput *videoDataOutput;
@@ -29,6 +29,7 @@ static WXQRCodeScanManager *_instance;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         _instance = [super allocWithZone:zone];
+        _instance.previewLayerRect = CGRectMake(0, 0, [UIScreen mainScreen].bounds.size.width, [UIScreen mainScreen].bounds.size.height);
     });
     return _instance;
 }
@@ -67,21 +68,22 @@ static WXQRCodeScanManager *_instance;
     // 3、创建数据输出流
     AVCaptureMetadataOutput *metadataOutput = [[AVCaptureMetadataOutput alloc] init];
     [metadataOutput setMetadataObjectsDelegate:self queue:dispatch_get_main_queue()];
-
+    
     // 3(1)、创建设备输出流
     self.videoDataOutput = [[AVCaptureVideoDataOutput alloc] init];
     [_videoDataOutput setSampleBufferDelegate:self queue:dispatch_get_main_queue()];
-
+    
     // 设置扫描范围（每一个取值0～1，以屏幕右上角为坐标原点）
     // 注：这里并没有做处理（可不用设置）; 如需限制扫描范围，打开下一句注释代码并进行相应调试
     // CGRectMake（y的起点/屏幕的高，x的起点/屏幕的宽，扫描的区域的高/屏幕的高，扫描的区域的宽/屏幕的宽)
     //    metadataOutput.rectOfInterest = CGRectMake(0.05, 0.2, 0.7, 0.6);
     
+    
     // 4、创建会话对象
     _session = [[AVCaptureSession alloc] init];
     // 会话采集率: AVCaptureSessionPresetHigh
     _session.sessionPreset = sessionPreset;
-
+    
     // 5、添加设备输出流到会话对象
     [_session addOutput:metadataOutput];
     // 5(1)添加设备输出流到会话对象；与 3(1) 构成识别光线强弱
@@ -99,15 +101,18 @@ static WXQRCodeScanManager *_instance;
     _videoPreviewLayer = [AVCaptureVideoPreviewLayer layerWithSession:_session];
     // 保持纵横比；填充层边界
     _videoPreviewLayer.videoGravity = AVLayerVideoGravityResizeAspectFill;
-    CGFloat x = 0;
-    CGFloat y = 0;
-    CGFloat w = [UIScreen mainScreen].bounds.size.width;
-    CGFloat h = [UIScreen mainScreen].bounds.size.height;
-    _videoPreviewLayer.frame = CGRectMake(x, y, w, h);
+    
+    _videoPreviewLayer.frame = _previewLayerRect;
     [currentController.view.layer insertSublayer:_videoPreviewLayer atIndex:0];
     
     // 9、启动会话
     [_session startRunning];
+}
+
+- (void)setPreviewLayerRect:(CGRect)previewLayerRect
+{
+    _previewLayerRect = previewLayerRect;
+    _videoPreviewLayer.frame = previewLayerRect;
 }
 
 #pragma mark - - - AVCaptureMetadataOutputObjectsDelegate
@@ -126,7 +131,7 @@ static WXQRCodeScanManager *_instance;
     NSDictionary *exifMetadata = [[metadata objectForKey:(NSString *)kCGImagePropertyExifDictionary] mutableCopy];
     float brightnessValue = [[exifMetadata objectForKey:(NSString *)kCGImagePropertyExifBrightnessValue] floatValue];
     
-//    NSLog(@"%f",brightnessValue);
+    //    NSLog(@"%f",brightnessValue);
     
     if (self.delegate && [self.delegate respondsToSelector:@selector(wx_QRCodeScanManager:brightnessValue:)]) {
         [self.delegate wx_QRCodeScanManager:self brightnessValue:brightnessValue];
@@ -137,8 +142,10 @@ static WXQRCodeScanManager *_instance;
 {
     _effectiveRect = effectiveRect;
     AVCaptureMetadataOutput *metadataOutput = _session.outputs[0];
-    CGRect screenRect = [[UIScreen mainScreen] bounds];
-    metadataOutput.rectOfInterest = CGRectMake(effectiveRect.origin.y/screenRect.size.height, effectiveRect.origin.x/screenRect.size.width, effectiveRect.size.height/screenRect.size.height, effectiveRect.size.width/screenRect.size.width);
+    //要在startRuning后调用 metadataOutputRectOfInterestForRect才管用
+    CGRect intertRect = [_videoPreviewLayer metadataOutputRectOfInterestForRect:effectiveRect];
+    metadataOutput.rectOfInterest = intertRect;
+    
 }
 
 - (void)wx_startRunning {
@@ -170,8 +177,57 @@ static WXQRCodeScanManager *_instance;
     AudioServicesAddSystemSoundCompletion(soundID, NULL, NULL, soundCompleteCallback, NULL);
     AudioServicesPlaySystemSound(soundID); // 播放音效
 }
+
 void soundCompleteCallback(SystemSoundID soundID, void *clientData){
     
+}
+
+
+#pragma --mark 从相册中读取二维码
+- (void)wx_readTheQRCodeFromTheAlbumWithOpenAlbumSuccess:(void(^)(UIImagePickerController *pickerVC))success  error:(void(^)(NSString *errorStr))error
+{
+    // 判断是否有权限
+    AVAuthorizationStatus authStatus = [AVCaptureDevice authorizationStatusForMediaType: AVMediaTypeVideo];
+    if (authStatus == AVAuthorizationStatusRestricted || authStatus == AVAuthorizationStatusDenied) {
+        if (error) {
+            error(@"请先到系统“隐私”中打开相机权限");
+        }
+        return;
+    }
+    
+    if ( [UIImagePickerController isSourceTypeAvailable: UIImagePickerControllerSourceTypePhotoLibrary] ) {
+        UIImagePickerController *pickerVC = [[UIImagePickerController alloc] init];
+        pickerVC.sourceType = UIImagePickerControllerSourceTypeSavedPhotosAlbum;
+        pickerVC.delegate = self;
+        // 转场动画
+        pickerVC.modalTransitionStyle = UIModalTransitionStyleFlipHorizontal;
+        if (success) {
+            success(pickerVC);
+        }
+    } else {
+        if (error) {
+            error(@"打开相册失败...");
+        }
+        return ;
+    }
+}
+
+- (void)imagePickerController:(UIImagePickerController *)picker didFinishPickingMediaWithInfo:(NSDictionary<NSString *,id> *)info {
+    // 使用 CIDetector 处理 图片
+    UIImage *QRCodeImage = info[UIImagePickerControllerOriginalImage];
+    CIDetector *detector = [CIDetector detectorOfType: CIDetectorTypeQRCode context: nil options: @{ CIDetectorAccuracy : CIDetectorAccuracyHigh }];
+    [picker dismissViewControllerAnimated: YES completion:^{
+        // 获取结果集(二维码的所有信息都包含在结果集中, 跟扫描出来的二维码的信息是一致的)
+        NSArray *result = [detector featuresInImage: [CIImage imageWithCGImage: QRCodeImage.CGImage]];
+        
+        for (CIQRCodeFeature *feature in result) {
+            NSString *obj = feature.messageString;
+            // 二维码信息处理
+            if (self.delegate && [self.delegate respondsToSelector:@selector(wx_QRCodeScanManager:didOutputFromAlbumMessageString:)]) {
+                [self.delegate wx_QRCodeScanManager:self didOutputFromAlbumMessageString:obj];
+            }
+        }
+    }];
 }
 
 

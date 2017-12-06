@@ -8,6 +8,14 @@
 
 #import <UIKit/UIKit.h>
 
+typedef NS_OPTIONS(NSUInteger, WXBorderSideType) {
+    WXBorderSideTypeAll  = 0,
+    WXBorderSideTypeTop = 1 << 0,
+    WXBorderSideTypeBottom = 1 << 1,
+    WXBorderSideTypeLeft = 1 << 2,
+    WXBorderSideTypeRight = 1 << 3,
+};
+
 typedef void (^TapActionBlock)(UITapGestureRecognizer *gestureRecoginzer);
 typedef void (^LongPressActionBlock)(UILongPressGestureRecognizer *gestureRecoginzer);
 
@@ -60,6 +68,13 @@ typedef void (^LongPressActionBlock)(UILongPressGestureRecognizer *gestureRecogi
 
 //移除所有子视图
 - (void)wx_removeAllSubviews;
+
+//添加边框
+- (UIView *)borderForColor:(UIColor *)color
+               borderWidth:(CGFloat)borderWidth
+                 lineSpace:(CGFloat)lineSpace
+                borderType:(WXBorderSideType)borderType;
+
 
 //xib加载视图
 + (instancetype)wx_loadViewFromNib;
