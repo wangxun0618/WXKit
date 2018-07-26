@@ -44,15 +44,15 @@
 [View.layer setMasksToBounds:YES]
 
 //创建UIImage
-#define KImageFor(imageName) [UIImage imageNamed:[NSString stringWithFormat:@"%@",imageName]]
+#define KIMAGEFOR(imageName) [UIImage imageNamed:[NSString stringWithFormat:@"%@",imageName]]
 
 // 检测block是否可用  KBLOCK_EXEC(completionBlock, arg1, arg2);
 #define KBLOCK_EXEC(block, ...) if (block) { block(__VA_ARGS__); }
 
 //设置font
-#define KSystemFont(float) [UIFont systemFontOfSize:float]
-#define KSystemBoldFont(float) [UIFont boldSystemFontOfSize:float]
-#define KFont(name, float)    [UIFont fontWithName:(name) size:(float)]
+#define KSYSTEMFONT(float) [UIFont systemFontOfSize:float]
+#define KSYSTEMBOLDFONT(float) [UIFont boldSystemFontOfSize:float]
+#define KFONT(name, float)    [UIFont fontWithName:(name) size:(float)]
 
 //字符串是否为空
 #define KSTRING_IS_EMPTY(str) ([str isKindOfClass:[NSNull class]] || str == nil || [str length] < 1 ? YES : NO )
