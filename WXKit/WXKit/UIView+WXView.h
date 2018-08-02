@@ -96,4 +96,19 @@ typedef void (^LongPressActionBlock)(UILongPressGestureRecognizer *gestureRecogi
 @property (strong,nonatomic) IBInspectable NSString  *borderHexRgb;
 @property (strong,nonatomic) IBInspectable UIColor   *borderColor;
 
+/**  设置圆角  */
+- (void)rounded:(CGFloat)cornerRadius;
+
+/**  设置圆角和边框  */
+- (void)rounded:(CGFloat)cornerRadius width:(CGFloat)borderWidth color:(UIColor *_Nullable)borderColor;
+
+/**  设置边框  */
+- (void)border:(CGFloat)borderWidth color:(UIColor *_Nullable)borderColor;
+
+/**   给哪几个角设置圆角  */
+-(void)round:(CGFloat)cornerRadius RectCorners:(UIRectCorner)rectCorner;
+
+/**  设置阴影  */
+-(void)shadow:(UIColor *_Nullable)shadowColor opacity:(CGFloat)opacity radius:(CGFloat)radius offset:(CGSize)offset;
+
 @end
