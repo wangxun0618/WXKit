@@ -25,4 +25,13 @@
 - (void)wx_addChildController:(UIViewController *)childController intoView:(UIView *)view;
 
 
+/**
+ 替换导航栏ViewControllers 中的ViewControllers
+
+ @param index ViewControllers 数组下标
+ @param viewController 替换的ViewController
+ */
+- (void)wx_replaceViewControllerAtIndex:(int)index
+                      withViewController:(UIViewController *)viewController;
+
 @end

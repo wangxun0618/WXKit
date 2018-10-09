@@ -51,15 +51,6 @@
 
 
 
-
-
-
-
-
-
-
-
-
 #pragma mark ******************* Private method ***********************
 
 - (void) initialization:(CGRect)contentFrame

@@ -10,18 +10,18 @@
 
 @implementation UIViewController (WXController)
 
-+ (UIViewController *)findBestViewController:(UIViewController *)vc
++ (UIViewController *)wx_findBestViewController:(UIViewController *)vc
 {
     if (vc.presentedViewController)
     {
-        return [self findBestViewController:vc.presentedViewController];
+        return [self wx_findBestViewController:vc.presentedViewController];
     }
     else if ([vc isKindOfClass:[UISplitViewController class]])
     {
         UISplitViewController* svc = (UISplitViewController*) vc;
         if (svc.viewControllers.count > 0)
         {
-            return [self findBestViewController:svc.viewControllers.lastObject];
+            return [self wx_findBestViewController:svc.viewControllers.lastObject];
         }
         else
         {
@@ -34,7 +34,7 @@
         UINavigationController* svc = (UINavigationController*) vc;
         if (svc.viewControllers.count > 0)
         {
-            return [self findBestViewController:svc.topViewController];
+            return [self wx_findBestViewController:svc.topViewController];
         }
         else
         {
@@ -47,7 +47,7 @@
         UITabBarController* svc = (UITabBarController *)vc;
         if (svc.viewControllers.count > 0)
         {
-            return [self findBestViewController:svc.selectedViewController];
+            return [self wx_findBestViewController:svc.selectedViewController];
         }
         else
         {
@@ -65,7 +65,7 @@
 {
     UIViewController *viewController = [[UIApplication sharedApplication].delegate window].rootViewController;
     
-    return [UIViewController findBestViewController:viewController];
+    return [UIViewController wx_findBestViewController:viewController];
 }
 
 + (UINavigationController *)wx_currentNavigatonController {
@@ -82,6 +82,15 @@
     [view addSubview:childController.view];
     
     [childController didMoveToParentViewController:self];
+}
+
+//替换导航栏数组中的ViewController
+- (void)wx_replaceViewControllerAtIndex:(int)index
+                      withViewController:(UIViewController *)viewController
+{
+    NSMutableArray* navArray = [[NSMutableArray alloc] initWithArray:self.navigationController.viewControllers];
+    [navArray replaceObjectAtIndex:index withObject:viewController];
+    [self.navigationController setViewControllers:navArray animated:YES];
 }
 
 @end
