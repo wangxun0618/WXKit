@@ -88,9 +88,70 @@
 - (void)wx_replaceViewControllerAtIndex:(int)index
                       withViewController:(UIViewController *)viewController
 {
-    NSMutableArray* navArray = [[NSMutableArray alloc] initWithArray:self.navigationController.viewControllers];
+    NSMutableArray* navArray;
+    UINavigationController *navigtionViewController;
+    
+    if ([self isKindOfClass:[UINavigationController class]]) {
+        navigtionViewController = (UINavigationController *)self;
+        navArray = [[NSMutableArray alloc] initWithArray:navigtionViewController.viewControllers];
+    } else {
+        navigtionViewController = self.navigationController;
+        navArray = [[NSMutableArray alloc] initWithArray:navigtionViewController.viewControllers];
+    }
+    
+    if (navArray.count <= index) {
+        return;
+    }
+    
     [navArray replaceObjectAtIndex:index withObject:viewController];
-    [self.navigationController setViewControllers:navArray animated:YES];
+    
+    navigtionViewController.viewControllers = navArray;
+}
+
+////移除导航栏数组中的ViewController
+- (void)removeViewControllerAtIndex:(int)index
+{
+    NSMutableArray* navArray = [NSMutableArray arrayWithCapacity:10];
+    UINavigationController *navigtionViewController;
+    
+    if ([self isKindOfClass:[UINavigationController class]]) {
+        navigtionViewController = (UINavigationController *)self;
+        navArray = [[NSMutableArray alloc] initWithArray:navigtionViewController.viewControllers];
+        
+    } else {
+        navigtionViewController = self.navigationController;
+        navArray = [[NSMutableArray alloc] initWithArray:navigtionViewController.viewControllers];
+    }
+    
+    if (navArray.count <= index) {
+        return;
+    }
+    
+    [navArray removeObjectAtIndex:index];
+    navigtionViewController.viewControllers = navArray;
+    
+}
+
+//添加导航栏数组中的ViewController
+- (void)addViewControllerAtIndex:(int)index
+                  viewController:(UIViewController *)viewController
+{
+    NSMutableArray* navArray = [NSMutableArray arrayWithCapacity:10];
+    UINavigationController *navigtionViewController;
+    
+    if ([self isKindOfClass:[UINavigationController class]]) {
+        navigtionViewController = (UINavigationController *)self;
+        navArray = [[NSMutableArray alloc] initWithArray:navigtionViewController.viewControllers];
+        
+    } else {
+        navigtionViewController = self.navigationController;
+        navArray = [[NSMutableArray alloc] initWithArray:navigtionViewController.viewControllers];
+    }
+    if (navArray.count <= index) {
+        return;
+    }
+    navArray[index] = viewController;
+    navigtionViewController.viewControllers = navArray;
 }
 
 @end
